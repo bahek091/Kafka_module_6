@@ -388,75 +388,16 @@ kafkactl consume MyTopic-3 --from-beginning
 
 ---
 
-## 11. Ключевой вывод по форматам схем
-
-Главная ошибка в предыдущей версии документа — неверная трактовка причины сбоя.
-Правильная картина:
-
-| Компонент | Ожидаемый формат схемы |
-|---|---|
-| `JsonRecordSetWriter` | **JSON Schema** |
-| `AvroRecordSetWriter` | **Avro** |
-| `ConfluentSchemaRegistry` (контроллер-сервис) | получает схему из реестра как текст и передаёт writer'у |
-
-Отсюда правило: **формат схемы в реестре должен совпадать с типом Record Writer**.
-
-- `JsonRecordSetWriter` + Avro-схема в реестре → ошибка вида
-  «not a valid JSON Schema».
-- `AvroRecordSetWriter` + JSON Schema в реестре → ошибка разбора Avro.
-- Рабочая комбинация в текущем решении: `AvroRecordSetWriter` +
-  субъект `MyTopic-3-value` с `schemaType: "AVRO"`.
-
-Дополнительно: имя субъекта должно соответствовать тому, что указано в
-`Schema Name`. Стандартная стратегия именования Confluent — `<топик>-value`
-для значения и `<топик>-key` для ключа, что и объясняет выбор
-`MyTopic-3-value` вместо `MyTopic-3`.
-
----
-
-## 12. Открытые вопросы
+## 11. Открытые вопросы
 
 **Расхождение `brokers_count`.** API возвращает `brokers_count: "1"` при
 фактических трёх хостах. Из-за этого ранее возникала ошибка формы
 «Значение должно быть меньше или равно 0» при создании топика.
 Топики создавать через CLI/API, а не через форму консоли.
 
-**Устаревшая страница консоли.** Вкладка в браузере указывает на кластер
-`c9q2qdqmatvf9g3ii9b1`, которого больше не существует. Актуальный адрес:
-`https://console.cloud.yandex.ru/folders/b1garhid9ikqi6ek09j9/managed-kafka/cluster/c9q6v0lk049fbhvqe8dh`.
-
-**Неиспользуемый субъект `MyTopic-3`.** JSON-схема осталась в реестре, но
-не используется. Её можно удалить, чтобы не путать при разборе инцидентов:
-
-```bash
-curl --request DELETE \
-  --url 'https://rc1a-6782bojupms8aio6.mdb.yandexcloud.net:443/subjects/MyTopic-3' \
-  --user kafka-user:'<пароль>' --cacert ~/YandexInternalRootCA.crt
-```
 **Чтение Avro-сообщений.** `kafkactl consume` покажет бинарный префикс и
 Avro-полезную нагрузку в нечитаемом виде. Для проверки содержимого нужен
 клиент с поддержкой Schema Registry либо Kafka UI кластера
 (`https://ui-c9q6v0lk049fbhvqe8dh.kafka.yandexcloud.net`).
 
-**Ограничение по документации.** Официальной документации Apache NiFi по
-свойствам `AvroRecordSetWriter`, `JsonRecordSetWriter` и
-`ConfluentSchemaRegistry` получить не удалось — поиск возвращает только
-материалы Yandex Cloud. Названия свойств NiFi приведены по общему знанию
-продукта и подтверждены практикой работы в этом решении. Подтверждено
-документацией Yandex Cloud: адрес реестра — HTTPS на порту 443 через FQDN
-хоста-брокера, авторизация логином/паролем пользователя Kafka, тот же
-клиентский SSL-сертификат, что для брокеров, субъекты вида
-`<топик>-key` / `<топик>-value`, поддерживаемые форматы Avro, JSON Schema,
-Protobuf.
 
----
-
-## Источники
-
-- [Управление схемами данных — Managed Service for Apache Kafka](https://yandex.cloud/ru/docs/managed-kafka/concepts/managed-schema-registry)
-- [Использование Managed Schema Registry через REST API](https://yandex.cloud/ru/docs/tutorials/dataplatform/managed-schema-registry-rest)
-- [Подключение к кластеру Apache Kafka](https://yandex.cloud/ru/docs/managed-kafka/operations/connect/clients)
-- [Предварительная настройка подключения к кластеру Apache Kafka](https://yandex.cloud/ru/docs/managed-kafka/operations/connect/)
-- [Как работать с топиками и разделами кластера](https://yandex.cloud/ru/docs/managed-kafka/operations/cluster-topics)
-- [yc managed-kafka topic update](https://yandex.cloud/ru/docs/managed-kafka/cli-ref/topic/update)
-- [Managed Service for Apache Kafka — ответы на вопросы](https://yandex.cloud/ru/docs/managed-kafka/qa/)

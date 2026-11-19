@@ -25,46 +25,31 @@
 ## 1. Общая схема
 
 
-┌────────────────────────────────────────────┐
-│ Ноутбук (macOS) · Docker                   │
-│                                            │
-│   ┌──────────────────────────────────┐     │
-│   │ Apache NiFi                      │     │
-│   │  PublishKafkaRecord_2_0          │     │
-│   │  AvroRecordSetWriter             │     │
-│   └──────────────────────────────────┘     │
-│                                            │
-│   kafkactl (CLI)                           │
-└──────────────────────┬─────────────────────┘
-                       │
-                       │  HTTPS 443     → Schema Registry
-                       │  SASL_SSL 9091 → Kafka
-                       │  (публичный доступ)
-                       ▼
-┌────────────────────────────────────────────┐
-│ Yandex Cloud                               │
-│ каталог b1garhid9ikqi6ek09j9               │
-│                                            │
-│   ┌──────────────────────────────────┐     │
-│   │ Managed Service for Kafka        │     │
-│   │ кластер kafka777                 │     │
-│   │ c9q6v0lk049fbhvqe8dh             │     │
-│   │ Kafka 4.2.1 · HA                 │     │
-│   │ 3 брокера в 3 зонах AZ           │     │
-│   │                                  │     │
-│   │  rc1a-…  (ru-central1-a)         │     │
-│   │  rc1d-…  (ru-central1-d)         │     │
-│   │  rc1f-…  (ru-central1-f)         │     │
-│   │                                  │     │
-│   │ топики: MyTopic-1, -2, -3        │     │
-│   │ пользователь: kafka-user         │     │
-│   │ Schema Registry (Karapace)       │     │
-│   │  субъект MyTopic-3-value: AVRO   │     │
-│   └──────────────────────────────────┘     │
-│                                            │
-│   VPC enp6c84e3v0hhq6otv81                 │
-│   SG  enpq2v71d2llnuv5tovs                 │
-└────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Local["Ноутбук (macOS) · Docker"]
+        NiFi["Apache NiFi<br/>PublishKafkaRecord_2_0<br/>AvroRecordSetWriter"]
+        CLI["kafkactl (CLI)"]
+    end
+
+    subgraph YC["Yandex Cloud · каталог b1garhid9ikqi6ek09j9"]
+        subgraph Kafka["Managed Service for Kafka<br/>кластер kafka777 · Kafka 4.2.1 · HA"]
+            B1["rc1a-… (ru-central1-a)"]
+            B2["rc1d-… (ru-central1-d)"]
+            B3["rc1f-… (ru-central1-f)"]
+        end
+        SR["Schema Registry (Karapace)<br/>субъект MyTopic-3-value: AVRO"]
+        Topics["топики: MyTopic-1, -2, -3<br/>пользователь: kafka-user"]
+    end
+
+    NiFi -->|"HTTPS 443"| SR
+    NiFi -->|"SASL_SSL 9091"| B1
+    CLI -->|"SASL_SSL 9091"| B1
+    B1 --- B2
+    B1 --- B3
+    Kafka --- SR
+    Kafka --- Topics
+```
 
 
 Поток данных: NiFi читает файл → разбирает записи через Record Reader →

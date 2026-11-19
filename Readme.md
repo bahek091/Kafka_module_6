@@ -25,36 +25,46 @@
 ## 1. Общая схема
 
 
-┌──────────────────────────────┐
-│ Ноутбук (macOS) │
-│ Docker │
-│ ┌────────────────────────┐ │
-│ │ Apache NiFi │ │
-│ │ PublishKafkaRecord_2_0 │ │
-│ │ AvroRecordSetWriter │ │
-│ └───────────┬────────────┘ │
-│ kafkactl (CLI) │
-└──────────────┼───────────────┘
-│ HTTPS 443 → Managed Schema Registry
-│ SASL_SSL 9091 → Kafka (публичный доступ)
-┌──────────────┼─────────────────────────────────────────┐
-│ Yandex Cloud · каталог b1garhid9ikqi6ek09j9 │
-│ ┌───────────▼──────────────────────────────────────┐ │
-│ │ Managed Service for Apache Kafka │ │
-│ │ кластер kafka777 (c9q6v0lk049fbhvqe8dh) │ │
-│ │ Kafka 4.2.1 · HA · 3 брокера · 3 зоны AZ │ │
-│ │ ├─ rc1a-6782bojupms8aio6 (ru-central1-a) │ │
-│ │ ├─ rc1d-ob5dnc3pcqcm6jq4 (ru-central1-d) │ │
-│ │ └─ rc1f-4bv4lq02sat1509r (ru-central1-f) │ │
-│ │ │ │
-│ │ топики: MyTopic-1, MyTopic-2, MyTopic-3 │ │
-│ │ пользователь: kafka-user │ │
-│ │ Managed Schema Registry (Karapace) │ │
-│ │ субъект MyTopic-3-value — AVRO │ │
-│ └──────────────────────────────────────────────────┘ │
-│ VPC enp6c84e3v0hhq6otv81 │
-│ SG enpq2v71d2llnuv5tovs │
-└────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────┐
+│ Ноутбук (macOS) · Docker                   │
+│                                            │
+│   ┌──────────────────────────────────┐     │
+│   │ Apache NiFi                      │     │
+│   │  PublishKafkaRecord_2_0          │     │
+│   │  AvroRecordSetWriter             │     │
+│   └──────────────────────────────────┘     │
+│                                            │
+│   kafkactl (CLI)                           │
+└──────────────────────┬─────────────────────┘
+                       │
+                       │  HTTPS 443     → Schema Registry
+                       │  SASL_SSL 9091 → Kafka
+                       │  (публичный доступ)
+                       ▼
+┌────────────────────────────────────────────┐
+│ Yandex Cloud                               │
+│ каталог b1garhid9ikqi6ek09j9               │
+│                                            │
+│   ┌──────────────────────────────────┐     │
+│   │ Managed Service for Kafka        │     │
+│   │ кластер kafka777                 │     │
+│   │ c9q6v0lk049fbhvqe8dh             │     │
+│   │ Kafka 4.2.1 · HA                 │     │
+│   │ 3 брокера в 3 зонах AZ           │     │
+│   │                                  │     │
+│   │  rc1a-…  (ru-central1-a)         │     │
+│   │  rc1d-…  (ru-central1-d)         │     │
+│   │  rc1f-…  (ru-central1-f)         │     │
+│   │                                  │     │
+│   │ топики: MyTopic-1, -2, -3        │     │
+│   │ пользователь: kafka-user         │     │
+│   │ Schema Registry (Karapace)       │     │
+│   │  субъект MyTopic-3-value: AVRO   │     │
+│   └──────────────────────────────────┘     │
+│                                            │
+│   VPC enp6c84e3v0hhq6otv81                 │
+│   SG  enpq2v71d2llnuv5tovs                 │
+└────────────────────────────────────────────┘
 
 
 Поток данных: NiFi читает файл → разбирает записи через Record Reader →

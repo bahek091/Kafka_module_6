@@ -7,21 +7,31 @@
   <name>Archetype - Module_6_task</name>
   <url>http://maven.apache.org</url>
 
+  <properties>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Confluent Platform 7.6.x: Kafka 3.6.x, Avro 1.11.x -->
+    <kafka.version>3.6.2</kafka.version>
+    <avro.version>1.11.4</avro.version>
+    <confluent.version>7.6.0</confluent.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
-      <version>3.9.2</version> <!-- Upgrade from 3.6.0 to 3.9.2 -->
+      <version>${kafka.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
-      <version>1.11.4</version>
+      <version>${avro.version}</version>
     </dependency>
     <dependency>
       <groupId>io.confluent</groupId>
       <artifactId>kafka-avro-serializer</artifactId>
-      <version>7.6.0</version>
+      <version>${confluent.version}</version>
     </dependency>
   </dependencies>
 
@@ -30,14 +40,14 @@
       <plugin>
         <groupId>org.apache.avro</groupId>
         <artifactId>avro-maven-plugin</artifactId>
-        <version>1.11.3</version>
+        <version>${avro.version}</version>
         <executions>
           <execution>
             <phase>generate-sources</phase>
             <goals><goal>schema</goal></goals>
             <configuration>
               <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
-              <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+              <outputDirectory>${project.build.directory}/generated-sources/avro/</outputDirectory>
             </configuration>
           </execution>
         </executions>

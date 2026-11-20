@@ -1,9 +1,0 @@
-{
-  "type": "record",
-  "name": "MyTopicMessage",
-  "namespace": "org.example",
-  "fields": [
-    { "name": "id", "type": "int" },
-    { "name": "content", "type": "string" }
-  ]
-}

@@ -122,8 +122,17 @@ Cloud Shell для выполнения API-запросов.
 | `MyTopic-2` | 3 | 3 | `delete` | 604800000 (7 сут.) | 1073741824 (1 ГиБ) |
 | `MyTopic-3` | 3 | 3 | `delete` | 604800000 (7 сут.) | 1073741824 (1 ГиБ) |
 
+Для конфигурации компрессии и min-insync-replicas требуется запустить команду
+
+```bash
+yc managed-kafka topic update MyTopic-1 \
+  --cluster-name kafka777 \
+  --min-insync-replicas 2 \
+  --compression-type zstd
+```
+
 Не заданы (действуют значения по умолчанию): `retention.bytes`,
-`max.message.bytes`, `min.insync.replicas`, `compression.type`,
+`max.message.bytes`,
 `delete.retention.ms`, `file.delete.delay.ms`, `flush.messages`, `flush.ms`,
 `preallocate`.
 
